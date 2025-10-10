@@ -3,7 +3,7 @@ A minimal web-based exam generator that allows teachers or students to create ra
 
 Ein Einfacher webbasierter Klausurgenerator, mit dem Lehrende oder Lernende aus einer einfachen CSV-Datei mit Fragen und Punktwerten zufällige Übungsprüfungen erstellen können. Die WebApp generiert automatisch einen Satz von Fragen, die einer bestimmten Gesamtpunktzahl (z. B. 50 Punkten) entsprechen, und exportiert das Ergebnis als PDF.
 
----
+
 
 ## Features
 
@@ -13,7 +13,6 @@ Ein Einfacher webbasierter Klausurgenerator, mit dem Lehrende oder Lernende aus 
 - Export the exam as a PDF
 - Works fully client-side — no server or installation needed
 
----
 
 ## Languages
 

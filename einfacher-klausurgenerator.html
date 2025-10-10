@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Übungsklausur-Generator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .upload-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+    }
+    .button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    .button:hover { background-color: #2980b9; }
+    .button:disabled { background-color: #95a5a6; cursor: not-allowed; }
+    .button-success { background-color: #27ae60; }
+    .button-success:hover { background-color: #219653; }
+    .status {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .exam-preview {
+      margin-top: 30px;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 5px;
+      background-color: #fff;
+    }
+    .question {
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    .points { font-weight: bold; color: #e74c3c; }
+    .total-points {
+      text-align: right;
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 2px solid #2c3e50;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Der Übungsklausur-Generator</h1>
+
+    <div class="upload-section">
+      <h2>1. CSV-Datei hochladen</h2>
+      <p>Die CSV-Datei muss folgendes Format haben: <strong>"Frage;Punkte"</strong> (Semikolon-getrennt)</p>
+      <input type="file" id="csvFile" accept=".csv">
+      <button id="loadCsv" class="button">CSV laden</button>
+      <div id="csvStatus" class="status"></div>
+    </div>
+
+    <div class="upload-section">
+      <h2>2. Übungsklausur generieren</h2>
+<label for="targetPoints">Gesamtpunktzahl wählen:</label>
+  <input type="number" id="targetPoints" value="50" min="1" style="width:80px; margin-left:10px;">
+  <p>Generiert eine Übungsklausur mit zufälligen Fragen, die genau die gewünschte Punktzahl ergibt.</p>
+      <button id="generateExam" class="button" disabled>Übungsklausur generieren</button>
+      <div id="generationStatus" class="status"></div>
+    </div>
+
+    <div class="upload-section">
+      <h2>CSV-Datei als Vorlage</h2>
+      <p><a href="https://www.mustafa-bilgin.de/sit/sicherheitsfragen_50_utf8.csv" target="_blank">Download CSV-Vorlage</a></p>
+    </div>
+
+    <div class="exam-preview hidden" id="examPreview">
+      <h2>3. Übungsklausurvorschau</h2>
+      <div id="examContent"></div>
+      <div class="total-points" id="totalPoints"></div>
+      <button id="exportPdf" class="button button-success">Als PDF exportieren</button>
+    </div>
+  </div>
+
+  <script>
+    let questions = [];
+    let currentExam = [];
+
+    const csvFileInput = document.getElementById('csvFile');
+    const loadCsvButton = document.getElementById('loadCsv');
+    const csvStatus = document.getElementById('csvStatus');
+    const generateExamButton = document.getElementById('generateExam');
+    const generationStatus = document.getElementById('generationStatus');
+    const examPreview = document.getElementById('examPreview');
+    const examContent = document.getElementById('examContent');
+    const totalPoints = document.getElementById('totalPoints');
+    const exportPdfButton = document.getElementById('exportPdf');
+
+    // CSV-Datei laden
+    loadCsvButton.addEventListener('click', function() {
+      const file = csvFileInput.files[0];
+      if (!file) {
+        showStatus(csvStatus, 'Bitte wählen Sie eine CSV-Datei aus.', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          let csvText = e.target.result;
+
+          // Entfernt UTF-8 BOM, falls vorhanden
+          if (csvText.charCodeAt(0) === 0xFEFF) {
+            csvText = csvText.slice(1);
+          }
+
+          parseCSV(csvText);
+        } catch (error) {
+          showStatus(csvStatus, 'Fehler beim Lesen der CSV-Datei: ' + error.message, 'error');
+        }
+      };
+      reader.readAsText(file, "UTF-8");
+    });
+
+    // CSV parsen
+    function parseCSV(csvText) {
+      questions = [];
+      const lines = csvText.split(/\r?\n/);
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line === '') continue;
+
+        const parts = line.split(';');
+        if (parts.length < 2) {
+          showStatus(csvStatus, `Ungültiges Format in Zeile ${i+1}. Erwartet: "Frage;Punkte" - Gefunden: "${line}"`, 'error');
+          return;
+        }
+
+        const question = parts[0].trim();
+        const points = parseInt(parts[1].trim(), 10);
+
+        if (isNaN(points) || points <= 0) {
+          showStatus(csvStatus, `Ungültige Punktzahl in Zeile ${i+1}: "${parts[1]}"`, 'error');
+          return;
+        }
+
+        questions.push({ question, points });
+      }
+
+      if (questions.length === 0) {
+        showStatus(csvStatus, 'Keine gültigen Fragen in der CSV-Datei gefunden.', 'error');
+        return;
+      }
+
+      showStatus(csvStatus, `Erfolgreich ${questions.length} Fragen geladen.`, 'success');
+      generateExamButton.disabled = false;
+    }
+
+    // Klausur generieren
+    generateExamButton.addEventListener('click', function() {
+      if (questions.length === 0) {
+        showStatus(generationStatus, 'Keine Fragen verfügbar. Bitte laden Sie zuerst eine CSV-Datei.', 'error');
+        return;
+      }
+
+  const targetPointsInput = document.getElementById('targetPoints');
+  const targetPoints = parseInt(targetPointsInput.value, 10);
+
+  if (isNaN(targetPoints) || targetPoints <= 0) {
+    showStatus(generationStatus, 'Bitte eine gültige Gesamtpunktzahl eingeben.', 'error');
+    return;
+  }
+
+  const exam = generateExamWithExactPoints(targetPoints, questions);
+  if (exam.length === 0) {
+    showStatus(generationStatus, `Es konnte keine Klausur mit genau ${targetPoints} Punkten erstellt werden.`, 'error');
+    return;
+  }
+      currentExam = exam;
+      displayExam(exam);
+      examPreview.classList.remove('hidden');
+      showStatus(generationStatus, `Klausur mit ${exam.length} Fragen und genau ${targetPoints} Punkten generiert.`, 'success');
+    });
+
+    // Algorithmus
+    function generateExamWithExactPoints(targetPoints, allQuestions) {
+      const sortedQuestions = [...allQuestions].sort((a, b) => b.points - a.points);
+      const result = findSubsetSum(sortedQuestions, targetPoints);
+      if (result.length > 0) return shuffleArray(result);
+      return [];
+    }
+
+    function findSubsetSum(questions, target) {
+      function backtrack(start, currentSum, currentSelection) {
+        if (currentSum === target) return [...currentSelection];
+        if (currentSum > target || start >= questions.length) return null;
+
+        currentSelection.push(questions[start]);
+        const withCurrent = backtrack(start + 1, currentSum + questions[start].points, currentSelection);
+        if (withCurrent) return withCurrent;
+
+        currentSelection.pop();
+        return backtrack(start + 1, currentSum, currentSelection);
+      }
+      return backtrack(0, 0, []) || [];
+    }
+
+    function shuffleArray(array) {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    // Klausur anzeigen
+    function displayExam(exam) {
+      examContent.innerHTML = '';
+      let total = 0;
+
+      exam.forEach((item, index) => {
+        total += item.points;
+
+        const questionElement = document.createElement('div');
+        questionElement.className = 'question';
+        questionElement.innerHTML = `
+          <p><strong>Aufgabe ${index + 1}:</strong> ${item.question}</p>
+          <p class="points">Punkte: ${item.points}</p>
+        `;
+
+        examContent.appendChild(questionElement);
+      });
+
+      totalPoints.textContent = `Gesamtpunktzahl: ${total}`;
+    }
+
+    // PDF exportieren
+    exportPdfButton.addEventListener('click', function() {
+      if (currentExam.length === 0) {
+        alert('Keine Klausur zum Exportieren verfügbar.');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.text('Übungsklausur', 105, 20, { align: 'center' });
+
+      const today = new Date().toLocaleDateString('de-DE');
+      doc.setFontSize(10);
+      doc.text(`Datum: ${today}`, 20, 35);
+
+      let yPosition = 50;
+      let pageNumber = 1;
+      doc.setFontSize(12);
+      doc.text(`Seite ${pageNumber}`, 190, 285, { align: 'right' });
+
+      currentExam.forEach((item, index) => {
+        if (yPosition > 270) {
+          doc.addPage();
+          pageNumber++;
+          yPosition = 20;
+          doc.setFontSize(12);
+          doc.text(`Seite ${pageNumber}`, 190, 285, { align: 'right' });
+        }
+
+        doc.setFontSize(12);
+        const taskText = `Aufgabe ${index + 1}: ${item.question}`;
+        const splitText = doc.splitTextToSize(taskText, 170);
+        doc.text(splitText, 20, yPosition);
+        yPosition += splitText.length * 7;
+
+        doc.setFontSize(10);
+        doc.text(`Punkte: ${item.points}`, 20, yPosition);
+        yPosition += 10;
+
+        doc.setDrawColor(200);
+        doc.line(20, yPosition, 190, yPosition);
+        yPosition += 25;
+      });
+
+      const total = currentExam.reduce((sum, item) => sum + item.points, 0);
+      doc.setFontSize(12);
+      doc.text(`Gesamtpunktzahl: ${total}`, 20, yPosition + 10);
+
+      doc.save('Übungsklausur.pdf');
+    });
+
+    function showStatus(element, message, type) {
+      element.textContent = message;
+      element.className = 'status ' + type;
+    }
+  </script>
+</body>
+</html>

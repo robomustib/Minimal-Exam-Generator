@@ -7,11 +7,11 @@ Ein Einfacher webbasierter Klausurgenerator, mit dem Lehrende oder Lernende aus 
 
 ## Features
 
-- Upload your own CSV file (Format: `Question;Points`)
+- Upload your own CSV file (Format: `Question;Points`) by using example_utf8.csv
 - Generate a randomized exam that matches your chosen total score
 - Preview the generated exam in the browser
 - Export the exam as a PDF
-- Works fully client-side — no server or installation needed
+- Works fully client-side
 
 
 ## Languages

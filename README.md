@@ -32,6 +32,12 @@ Describe the energy conversion in a wind turbine.;7
 Click here to try out:
 [Einfacher Klausurgenerator / German ](https://www.mustafa-bilgin.de/klausurgenerator)
 
+```bash
+git clone https://github.com/robomustib/Minimal-Exam-Generator.git
+cd Minimal-Exam-Generator
+open minimal-exam-generator.html
+```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

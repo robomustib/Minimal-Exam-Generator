@@ -3,7 +3,7 @@ A minimal web-based exam generator that allows teachers or students to create ra
 
 Ein Einfacher webbasierter Klausurgenerator, mit dem Lehrende oder Lernende aus einer einfachen CSV-Datei mit Fragen und Punktwerten zufällige Übungsprüfungen erstellen können. Die WebApp generiert automatisch einen Satz von Fragen, die einer bestimmten Gesamtpunktzahl (z. B. 50 Punkten) entsprechen, und exportiert das Ergebnis als PDF.
 
-<img src="https://github.com/robomustib/Minimal-Exam-Generator/blob/main/img/KlausurgeneratorLogo.png?raw=true" alt="Exam-Generator-Logo" width="50%"/>
+<img src="https://github.com/robomustib/Minimal-Exam-Generator/blob/main/img/KlausurgeneratorLogo.png?raw=true" alt="Exam-Generator-Logo" width="25%"/>
 ## Features
 
 - Upload your own CSV file (Format: `Question;Points`) by using example_utf8.csv

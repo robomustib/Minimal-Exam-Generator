@@ -41,3 +41,24 @@ open minimal-exam-generator.html
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Citation
+
+If you use this software for your research, please cite it using the DOI:
+
+**APA Format (7th Ed.):**
+> Bilgin, M. (2025). *Minimal-Exam-Generator / Einfacher Klausurgenerator* (Version 1.0.0) [Computer software]. Zenodo. [[https://doi.org/10.5281/zenodo.17635298](https://doi.org/10.5281/zenodo.17742765)
+
+**BibTeX:**
+```bibtex
+@software{gladia_batch_transcriber,
+  author       = {Bilgin, Mustafa},
+  title        = {Minimal-Exam-Generator / Einfacher Klausurgenerator},
+  year         = {2025},
+  publisher    = {Zenodo},
+  version      = {1.0.0},
+  doi          = {10.5281/zenodo.17742765},
+  url          = {https://doi.org/10.5281/zenodo.17742765}  
+}
+
+```

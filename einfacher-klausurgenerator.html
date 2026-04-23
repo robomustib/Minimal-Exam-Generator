@@ -3,772 +3,318 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Übungsklausur-Generator</title>
+  <title>Einfacher Klausurgenerator</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg0: #F7F8FA;
-      --bg1: #FFFFFF;
-      --bg2: #F0F2F6;
-      --bg3: #E4E8F0;
-      --text0: #1A202C;
-      --text1: #4A5568;
-      --text2: #8896B0;
-      --accent: #2563EB;
-      --accent-light: #EBF2FF;
-      --accent-border: #BFDBFE;
-      --green: #16A34A;
-      --green-light: #F0FDF4;
-      --green-border: #BBF7D0;
-      --red: #DC2626;
-      --red-light: #FEF2F2;
-      --red-border: #FECACA;
-      --amber: #D97706;
-      --amber-light: #FFFBEB;
-      --amber-border: #FDE68A;
-      --purple: #7C3AED;
-      --purple-light: #F5F3FF;
-      --purple-border: #DDD6FE;
-      --teal: #0D9488;
-      --teal-light: #F0FDFA;
-      --teal-border: #99F6E4;
-      --border: #E2E8F0;
-      --border-focus: #93C5FD;
-      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-      --r-sm: 6px;
-      --r-md: 10px;
-      --r-lg: 14px;
-    }
-
     body {
-      background: var(--bg0);
-      font-family: 'IBM Plex Sans', system-ui, sans-serif;
-      color: var(--text0);
-      padding: 2rem 1rem 4rem;
-      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
     }
-
-    .container { max-width: 860px; margin: 0 auto; }
-
-    .header {
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #2c3e50;
       text-align: center;
-      margin-bottom: 2rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border);
+      margin-bottom: 30px;
     }
-    .header-eyebrow {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.62rem;
-      letter-spacing: 0.18em;
-      color: var(--accent);
-      text-transform: uppercase;
-      margin-bottom: 0.45rem;
+    .upload-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
     }
-    .header h1 {
-      font-size: 1.55rem;
-      font-weight: 600;
-      color: var(--text0);
-      letter-spacing: -0.3px;
-    }
-    .header-sub { font-size: 0.78rem; color: var(--text2); margin-top: 0.35rem; }
-
-    .section {
-      background: var(--bg1);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg);
-      padding: 1.4rem;
-      margin-bottom: 1.1rem;
-      box-shadow: var(--shadow);
-    }
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      margin-bottom: 1rem;
-    }
-    .step-badge {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.58rem;
-      font-weight: 500;
-      background: var(--accent-light);
-      color: var(--accent);
-      border: 1px solid var(--accent-border);
-      padding: 0.18rem 0.55rem;
-      border-radius: 20px;
-      letter-spacing: 0.05em;
-      white-space: nowrap;
-    }
-    .section h2 { font-size: 0.92rem; font-weight: 600; color: var(--text0); }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      background: var(--bg1);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      padding: 0.42rem 0.9rem;
+    .button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
       cursor: pointer;
-      font-size: 0.78rem;
-      font-weight: 500;
-      color: var(--text0);
-      font-family: 'IBM Plex Sans', sans-serif;
-      transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
-      white-space: nowrap;
-      box-shadow: var(--shadow);
+      font-size: 16px;
+      margin-right: 10px;
     }
-    .btn:hover { background: var(--bg2); border-color: #CBD5E0; }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
-    .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .btn-primary:hover { background: #1D4ED8; border-color: #1D4ED8; }
-    .btn-success { background: var(--green); border-color: var(--green); color: #fff; }
-    .btn-success:hover { background: #15803D; border-color: #15803D; }
-    .btn-danger {
-      background: transparent;
-      border: 1px solid var(--red-border);
-      color: var(--red);
-      padding: 0.18rem 0.55rem;
-      font-size: 0.7rem;
-      border-radius: var(--r-sm);
-      cursor: pointer;
-      font-family: 'IBM Plex Sans', sans-serif;
-      transition: background 0.12s;
-    }
-    .btn-danger:hover { background: var(--red-light); }
-
+    .button:hover { background-color: #2980b9; }
+    .button:disabled { background-color: #95a5a6; cursor: not-allowed; }
+    .button-success { background-color: #27ae60; }
+    .button-success:hover { background-color: #219653; }
     .status {
-      margin-top: 0.7rem;
-      padding: 0.5rem 0.8rem;
-      border-radius: var(--r-sm);
-      font-size: 0.75rem;
-      display: none;
-      font-family: 'IBM Plex Mono', monospace;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 4px;
     }
-    .status.success { display: block; background: var(--green-light); color: #14532D; border: 1px solid var(--green-border); }
-    .status.error   { display: block; background: var(--red-light);   color: #7F1D1D; border: 1px solid var(--red-border); }
-    .status.info    { display: block; background: var(--bg2);          color: var(--text1); border: 1px solid var(--border); }
-
-    .form-group { margin-bottom: 0.8rem; }
-    .form-group label {
-      display: block;
-      font-size: 0.66rem;
-      font-weight: 600;
-      color: var(--text2);
-      margin-bottom: 0.28rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+    .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .exam-preview {
+      margin-top: 30px;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 5px;
+      background-color: #fff;
     }
-    .form-group input,
-    .form-group textarea,
-    .form-group select {
-      width: 100%;
-      padding: 0.42rem 0.65rem;
-      background: var(--bg1);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      color: var(--text0);
-      font-size: 0.82rem;
-      font-family: 'IBM Plex Sans', sans-serif;
-      outline: none;
-      transition: border-color 0.12s, box-shadow 0.12s;
+    .question {
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
     }
-    .form-group input:focus,
-    .form-group textarea:focus,
-    .form-group select:focus {
-      border-color: var(--border-focus);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    .points { font-weight: bold; color: #e74c3c; }
+    .total-points {
+      text-align: right;
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 2px solid #2c3e50;
     }
-    .form-group textarea { resize: vertical; }
-
-    .row {
-      display: flex;
-      gap: 0.45rem;
-      align-items: center;
-      margin-bottom: 0.4rem;
-    }
-    .row input {
-      flex: 1;
-      padding: 0.38rem 0.6rem;
-      background: var(--bg1);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      color: var(--text0);
-      font-size: 0.78rem;
-      font-family: 'IBM Plex Sans', sans-serif;
-      outline: none;
-    }
-    .row input:focus { border-color: var(--border-focus); }
-
-    .hint {
-      font-size: 0.72rem;
-      color: var(--text2);
-      margin-bottom: 0.75rem;
-      line-height: 1.55;
-    }
-    .hint code {
-      background: var(--bg2);
-      padding: 0.1rem 0.4rem;
-      border-radius: 3px;
-      font-family: 'IBM Plex Mono', monospace;
-      color: var(--amber);
-      font-size: 0.7rem;
-      border: 1px solid var(--border);
-    }
-
-    .controls { display: flex; gap: 0.55rem; flex-wrap: wrap; align-items: center; }
-
-    .task-form {
-      background: var(--bg0);
-      border: 1px solid var(--border);
-      border-radius: var(--r-md);
-      padding: 1.1rem;
-      margin-bottom: 0.75rem;
-    }
-    .task-form h3 {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--text1);
-      margin-bottom: 0.85rem;
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-    }
-
-    .task-item {
-      background: var(--bg0);
-      border: 1px solid var(--border);
-      border-radius: var(--r-md);
-      padding: 0.62rem 0.9rem;
-      margin-bottom: 0.45rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.7rem;
-    }
-    .task-info { flex: 1; font-size: 0.78rem; }
-    .empty-hint { font-size: 0.72rem; color: var(--text2); padding: 0.25rem 0; font-style: italic; }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.14rem 0.52rem;
-      border-radius: 20px;
-      font-size: 0.59rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      margin-right: 0.35rem;
-    }
-    .badge-open       { background: var(--accent-light); color: #1E40AF; border: 1px solid var(--accent-border); }
-    .badge-mc         { background: var(--red-light);    color: #991B1B; border: 1px solid var(--red-border); }
-    .badge-gap        { background: var(--amber-light);  color: #92400E; border: 1px solid var(--amber-border); }
-    .badge-memory     { background: var(--purple-light); color: #5B21B6; border: 1px solid var(--purple-border); }
-    .badge-connection { background: var(--teal-light);   color: #0F766E; border: 1px solid var(--teal-border); }
-
-    .template-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 0.8rem; }
-    .template-card {
-      background: var(--bg1);
-      border: 1px solid var(--border);
-      border-radius: var(--r-md);
-      padding: 0.9rem;
-      cursor: pointer;
-      transition: border-color 0.12s, box-shadow 0.12s;
-      box-shadow: var(--shadow);
-    }
-    .template-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
-    .template-card-title { font-size: 0.78rem; font-weight: 600; color: var(--text0); margin-bottom: 0.22rem; }
-    .template-card-sub   { font-size: 0.67rem; color: var(--text2); }
-    .template-dl         { font-size: 0.67rem; color: var(--accent); margin-top: 0.38rem; }
-
-    #examPreview { display: none; }
-
-    .question-block {
-      border-left: 3px solid var(--border);
-      padding: 0.85rem 1rem;
-      margin-bottom: 0.85rem;
-      background: var(--bg1);
-      border-radius: 0 var(--r-md) var(--r-md) 0;
-      box-shadow: var(--shadow);
-    }
-    .question-block.type-open       { border-left-color: var(--accent); }
-    .question-block.type-mc         { border-left-color: var(--red); }
-    .question-block.type-gap        { border-left-color: var(--amber); }
-    .question-block.type-memory     { border-left-color: var(--purple); }
-    .question-block.type-connection { border-left-color: var(--teal); }
-
-    .q-meta { display: flex; align-items: center; gap: 0.45rem; margin-bottom: 0.38rem; }
-    .q-pts {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.68rem;
-      color: var(--red);
-      font-weight: 500;
-    }
-    .q-text { font-size: 0.85rem; line-height: 1.55; color: var(--text0); margin-bottom: 0.55rem; }
-
-    .mc-options { margin-top: 0.35rem; }
-    .mc-opt {
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-      font-size: 0.78rem;
-      color: var(--text1);
-      padding: 0.28rem 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .mc-opt:last-child { border-bottom: none; }
-    .mc-circle {
-      width: 15px; height: 15px;
-      border-radius: 50%;
-      border: 1.5px solid #CBD5E0;
-      flex-shrink: 0;
-    }
-
-    .gap-text { font-size: 0.83rem; line-height: 2.1; color: var(--text1); }
-    .gap-blank {
-      display: inline-block;
-      min-width: 80px;
-      border-bottom: 1.5px solid #94A3B8;
-      margin: 0 0.2rem;
-      vertical-align: middle;
-    }
-
-    .memory-section-label {
-      font-size: 0.63rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text2);
-      margin: 0.6rem 0 0.38rem;
-    }
-    .memory-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 0.45rem;
-    }
-    .memory-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      padding: 0.5rem 0.6rem;
-      border-radius: var(--r-sm);
-      font-size: 0.75rem;
-      text-align: center;
-      color: var(--text1);
-      min-height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .memory-card.def-card {
-      background: var(--purple-light);
-      border-color: var(--purple-border);
-      color: #5B21B6;
-    }
-
-    .conn-table { width: 100%; margin-top: 0.5rem; border-collapse: collapse; font-size: 0.78rem; }
-    .conn-table tr { border-bottom: 1px solid var(--border); }
-    .conn-table tr:last-child { border-bottom: none; }
-    .conn-table td { padding: 0.38rem 0.3rem; }
-    .conn-left  { width: 40%; font-weight: 500; color: var(--text0); }
-    .conn-dots  { width: 20%; text-align: center; color: var(--text2); letter-spacing: 0.2em; font-size: 0.62rem; }
-    .conn-right { width: 40%; color: var(--teal); font-weight: 500; }
-
-    .answer-space {
-      margin-top: 0.5rem;
-      border: 1px dashed var(--border);
-      border-radius: var(--r-sm);
-      min-height: 58px;
-      background: var(--bg0);
-    }
-
-    .total-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem 0;
-      border-top: 1px solid var(--border);
-      margin-top: 0.4rem;
-    }
-    .total-bar span:first-child { font-size: 0.78rem; color: var(--text2); }
-    .total-bar span:last-child  { font-family: 'IBM Plex Mono', monospace; font-size: 1rem; font-weight: 600; color: var(--text0); }
-
-    hr { border: none; border-top: 1px solid var(--border); margin: 0.75rem 0; }
-
-    .ctrl-select {
-      background: var(--bg1);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      padding: 0.42rem 0.65rem;
-      color: var(--text0);
-      font-size: 0.78rem;
-      font-family: 'IBM Plex Sans', sans-serif;
-      outline: none;
-      cursor: pointer;
-      box-shadow: var(--shadow);
-    }
-    .ctrl-select:focus { border-color: var(--border-focus); }
-
-    .pts-input {
-      width: 80px;
-      background: var(--bg1);
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      padding: 0.42rem 0.65rem;
-      color: var(--text0);
-      font-size: 0.82rem;
-      font-family: 'IBM Plex Mono', monospace;
-      outline: none;
-      box-shadow: var(--shadow);
-    }
-    .pts-input:focus { border-color: var(--border-focus); }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
-<div class="container">
+  <div class="container">
+    <h1>Einfacher Klausurgenerator</h1>
 
-  <div class="header">
-    <div class="header-eyebrow">Bilgin's Laboratory</div>
-    <h1>Übungsklausur-Generator</h1>
-    <div class="header-sub">Version 3.0</div>
-  </div>
+    <div class="upload-section">
+      <h2>1. CSV-Datei hochladen</h2>
+      <p>Die CSV-Datei muss folgendes Format haben: <strong>"Frage;Punkte"</strong> (Semikolon-getrennt)</p>
+      <input type="file" id="csvFile" accept=".csv">
+      <button id="loadCsv" class="button">CSV laden</button>
+      <div id="csvStatus" class="status"></div>
+    </div>
 
-  <div class="section">
-    <div class="section-header">
-      <span class="step-badge">Schritt 01</span>
-      <h2>CSV-Datei hochladen</h2>
+    <div class="upload-section">
+      <h2>2. Übungsklausur generieren</h2>
+      <label for="targetPoints">Gesamtpunktzahl auswählen:</label>
+      <input type="number" id="targetPoints" value="50" min="1" style="width:80px; margin-left:10px;">
+      <p>Generiert eine Übungsklausur mit zufälligen Fragen, die genau die gewünschte Punktzahl erreichen.</p>
+      <button id="generateExam" class="button" disabled>Übungsklausur generieren</button>
+      <div id="generationStatus" class="status"></div>
     </div>
-    <p class="hint">
-      Format: <code>Frage;Punkte;Typ</code> oder mit Daten: <code>Frage;Punkte;Typ;{JSON}</code><br>
-      Typen: <code>open</code> · <code>mc</code> · <code>gap</code> · <code>memory</code> · <code>connection</code>
-    </p>
-    <div class="controls">
-      <input type="file" id="csvFile" accept=".csv" style="font-size:0.78rem; color:var(--text1); background:var(--bg1); border:1px solid var(--border); padding:0.4rem 0.6rem; border-radius:var(--r-sm); flex:1; min-width:0; box-shadow:var(--shadow)">
-      <button class="btn btn-primary" id="loadCsvBtn">Laden</button>
-    </div>
-    <div id="csvStatus" class="status"></div>
-  </div>
 
-  <div class="section">
-    <div class="section-header">
-      <span class="step-badge">Vorlagen</span>
-      <h2>CSV-Beispielvorlagen herunterladen</h2>
+    <div class="upload-section">
+      <h2>3. CSV-Vorlage</h2>
+      <p><a href="https://www.mustafa-bilgin.de/sit/sicherheitsfragen_50_utf8.csv" target="_blank">CSV-Vorlage herunterladen</a></p>
     </div>
-    <div class="template-grid">
-      <div class="template-card" id="dlTemplateTech">
-        <div class="template-card-title">Stoff- &amp; Energieumsetzung</div>
-        <div class="template-card-sub">Alle 5 Aufgabentypen · 8 Fragen</div>
-        <div class="template-dl">↓ CSV herunterladen</div>
-      </div>
-      <div class="template-card" id="dlTemplateSafety">
-        <div class="template-card-title">Sicherheit im Technikunterricht</div>
-        <div class="template-card-sub">Alle 5 Aufgabentypen · 8 Fragen</div>
-        <div class="template-dl">↓ CSV herunterladen</div>
-      </div>
-    </div>
-    <p class="hint">
-      Tipp: JSON-Daten für Sondertypen in Spalte 4 — z.B. memory: <code>{"pairs":[{"term":"Begriff","definition":"Erklärung"}]}</code>
-    </p>
-  </div>
 
-  <div class="section">
-    <div class="section-header">
-      <span class="step-badge">Schritt 02</span>
-      <h2>Aufgaben manuell erstellen</h2>
-    </div>
-    <div class="controls" style="margin-bottom:1rem">
-      <select class="ctrl-select" id="taskTypeSelect">
-        <option value="open">Offene Frage</option>
-        <option value="mc">Multiple Choice</option>
-        <option value="gap">Lückentext</option>
-        <option value="memory">Memory / Paare</option>
-        <option value="connection">Verbindungsaufgabe</option>
-      </select>
-      <button class="btn" id="addTaskTypeBtn">+ Aufgabe erstellen</button>
-    </div>
-    <div id="taskFormsContainer"></div>
-    <div>
-      <div style="font-size:0.68rem; color:var(--text2); margin-bottom:0.45rem; text-transform:uppercase; letter-spacing:0.06em;">Erstellte Aufgaben</div>
-      <div id="taskList"><div class="empty-hint">Noch keine eigenen Aufgaben erstellt.</div></div>
+    <div class="exam-preview hidden" id="examPreview">
+      <h2>4. Klausurvorschau</h2>
+      <div id="examContent"></div>
+      <div class="total-points" id="totalPoints"></div>
+      <button id="exportPdf" class="button button-success">Als PDF exportieren</button>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-header">
-      <span class="step-badge">Schritt 03</span>
-      <h2>Übungsklausur generieren</h2>
-    </div>
-    <div class="controls" style="margin-bottom:0.6rem">
-      <label style="font-size:0.78rem; color:var(--text1); white-space:nowrap">Gesamtpunktzahl:</label>
-      <input type="number" class="pts-input" id="targetPoints" value="25" min="1">
-      <button class="btn btn-primary" id="generateExamBtn" disabled>Klausur generieren</button>
-    </div>
-    <div id="genStatus" class="status"></div>
-  </div>
+  <script>
+    let questions = [];
+    let currentExam = [];
 
-  <div class="section" id="examPreview">
-    <div class="section-header">
-      <span class="step-badge">Vorschau</span>
-      <h2>Klausurvorschau</h2>
-    </div>
-    <div id="examContent"></div>
-    <div class="total-bar">
-      <span>Gesamtpunktzahl</span>
-      <span id="totalPointsDisplay">0</span>
-    </div>
-    <div class="controls" style="margin-top:1rem">
-      <button class="btn btn-success" id="exportPdfBtn">Als PDF exportieren</button>
-      <button class="btn" id="regenerateBtn">Neu generieren</button>
-    </div>
-  </div>
+    const csvFileInput = document.getElementById('csvFile');
+    const loadCsvButton = document.getElementById('loadCsv');
+    const csvStatus = document.getElementById('csvStatus');
+    const generateExamButton = document.getElementById('generateExam');
+    const generationStatus = document.getElementById('generationStatus');
+    const examPreview = document.getElementById('examPreview');
+    const examContent = document.getElementById('examContent');
+    const totalPoints = document.getElementById('totalPoints');
+    const exportPdfButton = document.getElementById('exportPdf');
 
-</div>
-<script>
-let questionsFromCsv=[];
-let taskTemplates=[];
-let currentExam=[];
-const TL={open:'Offene Frage',mc:'Multiple Choice',gap:'Lückentext',memory:'Memory',connection:'Verbindung'};
+    loadCsvButton.addEventListener('click', function() {
+      const file = csvFileInput.files[0];
+      if (!file) {
+        showStatus(csvStatus, 'Bitte wählen Sie eine CSV-Datei aus.', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          let csvText = e.target.result;
 
-function showStatus(el,msg,type){el.textContent=msg;el.className='status '+type;}
-function updateGenerateButton(){document.getElementById('generateExamBtn').disabled=(questionsFromCsv.length+taskTemplates.length)===0;}
+          if (csvText.charCodeAt(0) === 0xFEFF) {
+            csvText = csvText.slice(1);
+          }
 
-function parseCsv(txt){
-  const lines=txt.split(/\r?\n/);const result=[];
-  for(let i=0;i<lines.length;i++){
-    const line=lines[i].trim();if(!line)continue;
-    const parts=line.split(';');if(parts.length<2)continue;
-    const question=parts[0].trim();const points=parseInt(parts[1]);
-    if(!question||isNaN(points)||points<=0)continue;
-    const type=(parts[2]||'open').trim();
-    let data=null;
-    if(parts[3]){try{data=JSON.parse(parts.slice(3).join(';'));}catch(e){}}
-    result.push({question,points,type,data});
-  }
-  return result;
-}
-
-document.getElementById('loadCsvBtn').onclick=()=>{
-  const file=document.getElementById('csvFile').files[0];
-  const st=document.getElementById('csvStatus');
-  if(!file){showStatus(st,'Bitte eine CSV-Datei auswählen.','error');return;}
-  const reader=new FileReader();
-  reader.onload=(e)=>{
-    let txt=e.target.result;
-    if(txt.charCodeAt(0)===0xFEFF)txt=txt.slice(1);
-    const loaded=parseCsv(txt);
-    if(!loaded.length){showStatus(st,'Keine gültigen Fragen gefunden.','error');return;}
-    questionsFromCsv=loaded;
-    const types={};
-    loaded.forEach(q=>{types[q.type]=(types[q.type]||0)+1;});
-    const summary=Object.entries(types).map(([t,n])=>`${n}× ${TL[t]||t}`).join(' · ');
-    showStatus(st,`${loaded.length} Fragen geladen — ${summary}`,'success');
-    updateGenerateButton();
-  };
-  reader.readAsText(file,'UTF-8');
-};
-
-function renderTaskList(){
-  const c=document.getElementById('taskList');c.innerHTML='';
-  if(!taskTemplates.length){c.innerHTML='<div class="empty-hint">Noch keine eigenen Aufgaben erstellt.</div>';return;}
-  taskTemplates.forEach((t,idx)=>{
-    const div=document.createElement('div');div.className='task-item';
-    div.innerHTML=`<div class="task-info"><span class="badge badge-${t.type}">${TL[t.type]}</span>${t.question.substring(0,72)}${t.question.length>72?'…':''}<br><span style="font-size:0.68rem;color:var(--text2);margin-top:0.1rem;display:block">${t.points} Punkte</span></div><button class="btn-danger" data-idx="${idx}">Löschen</button>`;
-    c.appendChild(div);
-    div.querySelector('.btn-danger').addEventListener('click',()=>{
-      if(confirm('Aufgabe löschen?')){taskTemplates.splice(idx,1);renderTaskList();updateGenerateButton();}
+          parseCSV(csvText);
+        } catch (error) {
+          showStatus(csvStatus, 'Fehler beim Lesen der CSV-Datei: ' + error.message, 'error');
+        }
+      };
+      reader.readAsText(file, "UTF-8");
     });
-  });
-}
 
-document.getElementById('addTaskTypeBtn').onclick=()=>addTaskForm(document.getElementById('taskTypeSelect').value);
+    function parseCSV(csvText) {
+      questions = [];
+      const lines = csvText.split(/\r?\n/);
 
-function addTaskForm(type){
-  const id='tf_'+Date.now();
-  const container=document.getElementById('taskFormsContainer');
-  const div=document.createElement('div');div.className='task-form';div.id=id;
-  let extra='';
-  if(type==='mc'){
-    extra=`<div class="form-group"><label>Antwortoptionen</label><div id="${id}_opts"><div class="row"><input placeholder="Option A"><button class="btn-danger" onclick="this.parentNode.remove()">✖</button></div><div class="row"><input placeholder="Option B"><button class="btn-danger" onclick="this.parentNode.remove()">✖</button></div></div><button class="btn" id="${id}_addOpt" style="margin-top:0.35rem;font-size:0.7rem">+ Option</button></div><div class="form-group"><label>Korrekte Option (Index ab 0)</label><input type="number" id="${id}_correct" min="0" value="0" style="width:100px"></div>`;
-  }else if(type==='gap'){
-    extra=`<div class="form-group"><label>Text mit [Lücke] markiert</label><textarea id="${id}_gapText" rows="3" placeholder="Das Wasser siedet bei [Lücke] Grad."></textarea></div><div class="form-group"><label>Antworten (kommagetrennt, Reihenfolge der Lücken)</label><input id="${id}_gapAns" placeholder="100"></div>`;
-  }else if(type==='memory'){
-    extra=`<div class="form-group"><label>Paare (Begriff ↔ Definition)</label><div id="${id}_pairs"><div class="row"><input placeholder="Begriff"><input placeholder="Definition"><button class="btn-danger" onclick="this.parentNode.remove()">✖</button></div></div><button class="btn" id="${id}_addPair" style="margin-top:0.35rem;font-size:0.7rem">+ Paar hinzufügen</button></div>`;
-  }else if(type==='connection'){
-    extra=`<div class="form-group"><label>Verbindungspaare (links ↔ rechts)</label><div id="${id}_conns"><div class="row"><input placeholder="Linker Begriff"><input placeholder="Rechter Begriff"><button class="btn-danger" onclick="this.parentNode.remove()">✖</button></div></div><button class="btn" id="${id}_addConn" style="margin-top:0.35rem;font-size:0.7rem">+ Verbindung</button></div>`;
-  }
-  div.innerHTML=`<h3><span class="badge badge-${type}">${TL[type]}</span> Aufgabe erstellen</h3><div class="form-group"><label>Aufgabenstellung / Frage</label><textarea id="${id}_q" rows="2" placeholder="z.B. Erklären Sie …"></textarea></div><div class="form-group"><label>Punkte</label><input type="number" id="${id}_pts" min="1" value="2" style="width:100px"></div>${extra}<div class="controls" style="margin-top:0.9rem"><button class="btn btn-primary" id="${id}_save">Speichern</button><button class="btn" id="${id}_cancel">Abbrechen</button></div>`;
-  container.appendChild(div);
-  if(type==='mc')document.getElementById(`${id}_addOpt`).onclick=()=>{const d=document.createElement('div');d.className='row';d.innerHTML=`<input placeholder="Option"><button class="btn-danger" onclick="this.parentNode.remove()">✖</button>`;document.getElementById(`${id}_opts`).appendChild(d);};
-  if(type==='memory')document.getElementById(`${id}_addPair`).onclick=()=>{const d=document.createElement('div');d.className='row';d.innerHTML=`<input placeholder="Begriff"><input placeholder="Definition"><button class="btn-danger" onclick="this.parentNode.remove()">✖</button>`;document.getElementById(`${id}_pairs`).appendChild(d);};
-  if(type==='connection')document.getElementById(`${id}_addConn`).onclick=()=>{const d=document.createElement('div');d.className='row';d.innerHTML=`<input placeholder="Linker Begriff"><input placeholder="Rechter Begriff"><button class="btn-danger" onclick="this.parentNode.remove()">✖</button>`;document.getElementById(`${id}_conns`).appendChild(d);};
-  document.getElementById(`${id}_save`).onclick=()=>{
-    const question=document.getElementById(`${id}_q`).value.trim();
-    const points=parseInt(document.getElementById(`${id}_pts`).value);
-    if(!question||isNaN(points)||points<=0){alert('Bitte Frage und gültige Punkte eingeben.');return;}
-    let data=null;
-    if(type==='mc'){const opts=[...document.querySelectorAll(`#${id}_opts input`)].map(i=>i.value.trim()).filter(Boolean);if(opts.length<2){alert('Mindestens 2 Optionen.');return;}const correct=parseInt(document.getElementById(`${id}_correct`).value);data={options:opts,correct};}
-    else if(type==='gap'){const text=document.getElementById(`${id}_gapText`).value.trim();const answers=document.getElementById(`${id}_gapAns`).value.split(',').map(s=>s.trim());const gaps=(text.match(/\[Lücke\]/g)||[]).length;if(gaps!==answers.length){alert(`${gaps} Lücken, aber ${answers.length} Antworten.`);return;}data={text,answers};}
-    else if(type==='memory'){const pairs=[...document.querySelectorAll(`#${id}_pairs .row`)].map(r=>{const ins=r.querySelectorAll('input');return{term:ins[0]?.value.trim(),definition:ins[1]?.value.trim()};}).filter(p=>p.term&&p.definition);if(pairs.length<2){alert('Mindestens 2 Paare.');return;}data={pairs};}
-    else if(type==='connection'){const connections=[...document.querySelectorAll(`#${id}_conns .row`)].map(r=>{const ins=r.querySelectorAll('input');return{left:ins[0]?.value.trim(),right:ins[1]?.value.trim()};}).filter(c=>c.left&&c.right);if(connections.length<2){alert('Mindestens 2 Verbindungen.');return;}data={connections};}
-    taskTemplates.push({question,points,type,data});renderTaskList();div.remove();updateGenerateButton();
-  };
-  document.getElementById(`${id}_cancel`).onclick=()=>div.remove();
-}
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line === '') continue;
 
-function selectQuestions(all,target){
-  for(let a=0;a<300;a++){
-    const s=[...all].sort(()=>Math.random()-0.5);const sel=[];let sum=0;
-    for(const q of s){if(sum+q.points<=target){sel.push(q);sum+=q.points;}if(sum===target)return sel;}
-  }
-  return[];
-}
+        const parts = line.split(';');
+        if (parts.length < 2) {
+          showStatus(csvStatus, `Ungültiges Format in Zeile ${i+1}. Erwartet: "Frage;Punkte" - Gefunden: "${line}"`, 'error');
+          return;
+        }
 
-function renderPreview(exam,target){
-  let html='';
-  exam.forEach((q,idx)=>{
-    html+=`<div class="question-block type-${q.type}"><div class="q-meta"><span class="q-pts">${q.points} Punkt${q.points!==1?'e':''}</span><span class="badge badge-${q.type}">${TL[q.type]}</span></div><div class="q-text"><strong>Aufgabe ${idx+1}.</strong> ${q.question}</div>`;
-    if(q.type==='mc'&&q.data?.options){
-      html+='<div class="mc-options">';
-      q.data.options.forEach((opt,oi)=>{html+=`<div class="mc-opt"><span class="mc-circle"></span>${String.fromCharCode(65+oi)}) ${opt}</div>`;});
-      html+='</div>';
-    }else if(q.type==='gap'&&q.data?.text){
-      const gapped=q.data.text.replace(/\[Lücke\]/g,`<span class="gap-blank">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>`);
-      html+=`<div class="gap-text">${gapped}</div>`;
-    }else if(q.type==='memory'&&q.data?.pairs){
-      const terms=q.data.pairs.map(p=>p.term);
-      html+=`<div class="memory-section-label">Begriffe — tragen Sie die passende Definition in das leere Feld ein</div><div class="memory-grid">`;
-      terms.forEach(t=>{html+=`<div class="memory-card">${t}</div>`;});
-      html+=`</div><div class="memory-section-label">Ihre Antworten</div><div class="memory-grid">`;
-      terms.forEach(()=>{html+=`<div class="memory-card" style="min-height:52px;background:var(--bg0);border:1.5px dashed var(--border);">&nbsp;</div>`;});
-      html+=`</div>`;
-    }else if(q.type==='connection'&&q.data?.connections){
-      const lefts=q.data.connections.map(c=>c.left);
-      html+=`<table class="conn-table">`;
-      lefts.forEach((l)=>{html+=`<tr><td class="conn-left">${l}</td><td class="conn-dots">· · · · ·</td><td class="conn-right" style="color:var(--text2);font-weight:400;min-width:120px;border-bottom:1px solid #CBD5E0">&nbsp;</td></tr>`;});
-      html+=`</table>`;
-    }else if(q.type==='open'){
-      html+=`<div class="answer-space"></div>`;
+        const question = parts[0].trim();
+        const points = parseInt(parts[1].trim(), 10);
+
+        if (isNaN(points) || points <= 0) {
+          showStatus(csvStatus, `Ungültiger Punktwert in Zeile ${i+1}: "${parts[1]}"`, 'error');
+          return;
+        }
+
+        questions.push({ question, points });
+      }
+
+      if (questions.length === 0) {
+        showStatus(csvStatus, 'Keine gültigen Fragen in der CSV-Datei gefunden.', 'error');
+        return;
+      }
+
+      showStatus(csvStatus, `Erfolgreich ${questions.length} Fragen geladen.`, 'success');
+      generateExamButton.disabled = false;
     }
-    html+=`</div>`;
-  });
-  document.getElementById('examContent').innerHTML=html;
-  document.getElementById('totalPointsDisplay').textContent=target;
-  document.getElementById('examPreview').style.display='block';
-}
 
-document.getElementById('generateExamBtn').onclick=generate;
-document.getElementById('regenerateBtn').onclick=()=>{
-  const target=parseInt(document.getElementById('targetPoints').value);
-  const all=[...questionsFromCsv,...taskTemplates];
-  const exam=selectQuestions(all,target);
-  if(!exam.length){showStatus(document.getElementById('genStatus'),`Keine Kombination für ${target} Punkte.`,'error');return;}
-  currentExam=exam;renderPreview(exam,target);
-};
+    generateExamButton.addEventListener('click', function() {
+      if (questions.length === 0) {
+        showStatus(generationStatus, 'Keine Fragen verfügbar. Bitte laden Sie zuerst eine CSV-Datei.', 'error');
+        return;
+      }
 
-function generate(){
-  const target=parseInt(document.getElementById('targetPoints').value);
-  const st=document.getElementById('genStatus');
-  if(isNaN(target)||target<=0){showStatus(st,'Bitte gültige Punktzahl eingeben.','error');return;}
-  const all=[...questionsFromCsv,...taskTemplates];
-  if(!all.length){showStatus(st,'Keine Fragen verfügbar.','error');return;}
-  const exam=selectQuestions(all,target);
-  if(!exam.length){showStatus(st,`Keine exakte Kombination für ${target} Punkte. Zielwert anpassen oder mehr Fragen hinzufügen.`,'error');return;}
-  currentExam=exam;renderPreview(exam,target);
-  const types={};exam.forEach(q=>{types[q.type]=(types[q.type]||0)+1;});
-  const summary=Object.entries(types).map(([t,n])=>`${n}× ${TL[t]||t}`).join(' · ');
-  showStatus(st,`${exam.length} Aufgaben (${target} Pkt) — ${summary}`,'success');
-}
+      const targetPointsInput = document.getElementById('targetPoints');
+      const targetPoints = parseInt(targetPointsInput.value, 10);
 
-document.getElementById('exportPdfBtn').onclick=()=>{
-  if(!window.jspdf||!currentExam.length){alert('Keine Klausur zum Exportieren.');return;}
-  const{jsPDF}=window.jspdf;const doc=new jsPDF();
-  doc.setFont('helvetica');
-  doc.setFontSize(16);doc.setFont('helvetica','bold');
-  doc.text('Übungsklausur',105,18,{align:'center'});
-  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(120,120,120);
-  doc.text('Allgemeine Technologie: Stoff- und Energieumsetzende Systeme',105,25,{align:'center'});
-  doc.setTextColor(0,0,0);
-  let y=35;
-  currentExam.forEach((q,idx)=>{
-    if(y>270){doc.addPage();y=20;}
-    doc.setFontSize(11);doc.setFont('helvetica','bold');
-    const head=`Aufgabe ${idx+1} (${q.points} Punkt${q.points!==1?'e':''}): ${q.question}`;
-    const headLines=doc.splitTextToSize(head,170);
-    if(y+headLines.length*6>280){doc.addPage();y=20;}
-    doc.text(headLines,20,y);y+=headLines.length*6+3;
-    doc.setFont('helvetica','normal');doc.setFontSize(10);
-    if(q.type==='mc'&&q.data?.options){
-      q.data.options.forEach((opt,oi)=>{const t=`   [ ]  ${String.fromCharCode(65+oi)}) ${opt}`;const l=doc.splitTextToSize(t,160);if(y+l.length*5>280){doc.addPage();y=20;}doc.text(l,22,y);y+=l.length*5+2;});
-    }else if(q.type==='gap'&&q.data?.text){
-      const txt=q.data.text.replace(/\[Lücke\]/g,'___________');const l=doc.splitTextToSize(txt,165);if(y+l.length*5>280){doc.addPage();y=20;}doc.text(l,22,y);y+=l.length*5+4;
-    }else if(q.type==='memory'&&q.data?.pairs){
-      doc.setTextColor(100,100,100);doc.text('Begriffe den Definitionen zuordnen:',22,y);y+=6;doc.setTextColor(0,0,0);
-      const terms=q.data.pairs.map(p=>p.term);
-      terms.forEach(t=>{
-        const l=doc.splitTextToSize(`   ${t}`,85);
-        if(y+8>280){doc.addPage();y=20;}
-        doc.text(l,22,y);
-        doc.setDrawColor(180,180,180);doc.line(100,y+1,188,y+1);
-        y+=8;
-      });
-    }else if(q.type==='connection'&&q.data?.connections){
-      doc.setTextColor(100,100,100);doc.text('Verbindungen herstellen (rechte Spalte ausfüllen):',22,y);y+=6;doc.setTextColor(0,0,0);
-      const lefts=q.data.connections.map(c=>c.left);
-      lefts.forEach(l=>{
-        const lines=doc.splitTextToSize(`   ${l}`,85);
-        if(y+8>280){doc.addPage();y=20;}
-        doc.text(lines,22,y);
-        doc.setDrawColor(180,180,180);doc.line(100,y+1,188,y+1);
-        y+=8;
-      });
-    }else if(q.type==='open'){
-      doc.setDrawColor(180,180,180);
-      for(let i=0;i<3;i++){if(y+8>280){doc.addPage();y=20;}doc.line(22,y+6,190,y+6);y+=9;}
+      if (isNaN(targetPoints) || targetPoints <= 0) {
+        showStatus(generationStatus, 'Bitte geben Sie einen gültigen Gesamtpunktwert ein.', 'error');
+        return;
+      }
+
+      const exam = generateExamWithExactPoints(targetPoints, questions);
+      if (exam.length === 0) {
+        showStatus(generationStatus, `Konnte keine Klausur mit genau ${targetPoints} Punkten erstellen.`, 'error');
+        return;
+      }
+      currentExam = exam;
+      displayExam(exam);
+      examPreview.classList.remove('hidden');
+      showStatus(generationStatus, `Klausur mit ${exam.length} Fragen und genau ${targetPoints} Punkten generiert.`, 'success');
+    });
+
+    function generateExamWithExactPoints(targetPoints, allQuestions) {
+      const sortedQuestions = [...allQuestions].sort((a, b) => b.points - a.points);
+      const result = findSubsetSum(sortedQuestions, targetPoints);
+      if (result.length > 0) return shuffleArray(result);
+      return [];
     }
-    y+=6;
-  });
-  if(y+12>280){doc.addPage();y=20;}
-  doc.setFont('helvetica','bold');doc.setFontSize(11);
-  const total=currentExam.reduce((s,q)=>s+q.points,0);
-  doc.text(`Gesamtpunktzahl: ${total}`,190,y,{align:'right'});
-  doc.save('uebungsklausur.pdf');
-};
 
-function downloadCsv(rows,filename){
-  const blob=new Blob(['\uFEFF'+rows.join('\n')],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);const a=document.createElement('a');
-  a.href=url;a.download=filename;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
-}
+    function findSubsetSum(questions, target) {
+      function backtrack(start, currentSum, currentSelection) {
+        if (currentSum === target) return [...currentSelection];
+        if (currentSum > target || start >= questions.length) return null;
 
-document.getElementById('dlTemplateTech').onclick=()=>{
-  downloadCsv([
-    'Was sind energieumsetzende Systeme? Nennen Sie zwei Beispiele.;2;open',
-    'Erläutern Sie den Energieerhaltungssatz und geben Sie ein Alltagsbeispiel.;3;open',
-    'Ein Kraftwerk benötigt 4000 J und erzeugt 1000 J. Berechnen Sie den Wirkungsgrad.;2;open',
-    'Was beschreibt den Wirkungsgrad am besten?;2;mc;{"options":["Verhältnis Nutzenergie zu Eingangsenergie","Gesamtenergiemenge","Verlustleistung","Wärmeabgabe"],"correct":0}',
-    'Ein Verbrennungsmotor wandelt [Lücke] in [Lücke] um.;2;gap;{"text":"Ein Verbrennungsmotor wandelt [Lücke] in [Lücke] um.","answers":["chemische Energie","mechanische Arbeit"]}',
-    'Welche Reaktortypen gibt es?;2;mc;{"options":["Druckwasser-, Siedewasser- und Schneller Brüter","Nur Druckwasser","Nur Siedewasser","Gas- und Ölreaktor"],"correct":0}',
-    'Ordnen Sie Energieträger-Begriffe ihren Definitionen zu.;3;memory;{"pairs":[{"term":"Primärenergie","definition":"Direkt in der Natur vorkommend (Kohle, Wind)"},{"term":"Sekundärenergie","definition":"Umgewandelte Energie (Strom, Benzin)"},{"term":"Endenergie","definition":"Beim Verbraucher ankommende Energie"}]}',
-    'Ordnen Sie Energietechnologien ihren Umwandlungen zu.;4;connection;{"connections":[{"left":"Fotovoltaik","right":"Solarenergie → Strom"},{"left":"Windkraftanlage","right":"Bewegungsenergie → Strom"},{"left":"Pumpspeicherkraftwerk","right":"Lageenergie → Strom"},{"left":"Biogasanlage","right":"Chemische Energie → Gas"}]}'
-  ],'AT_Energie_Vorlage.csv');
-};
+        currentSelection.push(questions[start]);
+        const withCurrent = backtrack(start + 1, currentSum + questions[start].points, currentSelection);
+        if (withCurrent) return withCurrent;
 
-document.getElementById('dlTemplateSafety').onclick=()=>{
-  downloadCsv([
-    'Nennen Sie drei Grundsätze der Gefahrenvermeidung.;3;open',
-    'Erläutern Sie den Unterschied zwischen Gefahr und Gefährdung.;2;open',
-    'Welche Schutzmaßnahme ist primär für elektrische Anlagen vorgesehen?;2;mc;{"options":["FI-Schutzschalter","Schutzleiter","Isolierung","Berührungsschutz"],"correct":0}',
-    'Ab welchem Schalldruckpegel muss Gehörschutz getragen werden?;2;mc;{"options":["75 dB","85 dB","95 dB","65 dB"],"correct":1}',
-    'Die fünf Sicherheitsregeln: [Lücke], [Lücke], Spannungsfreiheit feststellen, Erden und Kurzschließen, Abdecken.;3;gap;{"text":"Die fünf Sicherheitsregeln: [Lücke], [Lücke], Spannungsfreiheit feststellen, Erden und Kurzschließen, Abdecken.","answers":["Freischalten","Gegen Wiedereinschalten sichern"]}',
-    'Welche Wirkungen hat Lärm auf den Menschen?;2;open',
-    'Ordnen Sie Schutzklassen ihren Merkmalen zu.;3;memory;{"pairs":[{"term":"Schutzklasse I","definition":"Schutzleiter vorhanden"},{"term":"Schutzklasse II","definition":"Schutzisolierung, kein Schutzleiter"},{"term":"Schutzklasse III","definition":"Schutzkleinspannung ≤ 50V"}]}',
-    'Verbinden Sie Gefahrstoffaufnahmen mit ihrer Beschreibung.;3;connection;{"connections":[{"left":"Inhalation","right":"Aufnahme über Atemwege"},{"left":"Dermal","right":"Aufnahme über Haut"},{"left":"Oral","right":"Aufnahme über Mund"}]}'
-  ],'Sicherheit_Technikunterricht_Vorlage.csv');
-};
+        currentSelection.pop();
+        return backtrack(start + 1, currentSum, currentSelection);
+      }
+      return backtrack(0, 0, []) || [];
+    }
 
-updateGenerateButton();renderTaskList();
-</script>
+    function shuffleArray(array) {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    function displayExam(exam) {
+      examContent.innerHTML = '';
+      let total = 0;
+
+      exam.forEach((item, index) => {
+        total += item.points;
+
+        const questionElement = document.createElement('div');
+        questionElement.className = 'question';
+        questionElement.innerHTML = `
+          <p><strong>Aufgabe ${index + 1}:</strong> ${item.question}</p>
+          <p class="points">Punkte: ${item.points}</p>
+        `;
+
+        examContent.appendChild(questionElement);
+      });
+
+      totalPoints.textContent = `Gesamtpunktzahl: ${total}`;
+    }
+
+    exportPdfButton.addEventListener('click', function() {
+      if (currentExam.length === 0) {
+        alert('Keine Klausur zum Exportieren verfügbar.');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.text('Übungsklausur', 105, 20, { align: 'center' });
+
+      const today = new Date().toLocaleDateString('de-DE');
+      doc.setFontSize(10);
+      doc.text(`Datum: ${today}`, 20, 35);
+
+      let yPosition = 50;
+      let pageNumber = 1;
+      doc.setFontSize(12);
+      doc.text(`Seite ${pageNumber}`, 190, 285, { align: 'right' });
+
+      currentExam.forEach((item, index) => {
+        if (yPosition > 270) {
+          doc.addPage();
+          pageNumber++;
+          yPosition = 20;
+          doc.setFontSize(12);
+          doc.text(`Seite ${pageNumber}`, 190, 285, { align: 'right' });
+        }
+
+        doc.setFontSize(12);
+        const taskText = `Aufgabe ${index + 1}: ${item.question}`;
+        const splitText = doc.splitTextToSize(taskText, 170);
+        doc.text(splitText, 20, yPosition);
+        yPosition += splitText.length * 7;
+
+        doc.setFontSize(10);
+        doc.text(`Punkte: ${item.points}`, 20, yPosition);
+        yPosition += 10;
+
+        doc.setDrawColor(200);
+        doc.line(20, yPosition, 190, yPosition);
+        yPosition += 25;
+      });
+
+      const total = currentExam.reduce((sum, item) => sum + item.points, 0);
+      doc.setFontSize(12);
+      doc.text(`Gesamtpunktzahl: ${total}`, 20, yPosition + 10);
+
+      doc.save('Uebungsklausur.pdf');
+    });
+
+    function showStatus(element, message, type) {
+      element.textContent = message;
+      element.className = 'status ' + type;
+    }
+  </script>
 </body>
 </html>
